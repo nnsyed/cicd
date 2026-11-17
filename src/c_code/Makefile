@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -O2 -std=c11
 
 # Output directory, target binaries, and archive path
-BUILD_DIR = targets
+BUILD_DIR = target
 TARGETS = $(addprefix $(BUILD_DIR)/, new_cat new_ls new_wc new_grep)
 ARCHIVE = $(BUILD_DIR)/utilities.tar.gz
 

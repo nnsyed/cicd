@@ -46,8 +46,8 @@
 	    <repository>
 			<id>github</id>
 			<name>GitHub Packages</name>
-			<url>https://github.com</url>
-		</repository>
+	        <url>https://maven.pkg.github.com/nnsyed/cicd</url>
+		</repository>		
 		<!--
 		<repository>
 			<id>local-artifactory-releases</id>

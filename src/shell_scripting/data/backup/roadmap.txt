@@ -1,0 +1,26 @@
+Level 1: The Basics (Fundamentals)
+    Script 1: Hello World & User Input (Greeting the user)
+    Script 2: Conditional Logic (Checking if a file/directory exists)
+    Script 3: Loops (Archiving or printing files in a directory)
+    Script 4: Command-Line Arguments (Passing parameters to a script)
+    Script 5: Functions & Return Codes (Creating reusable code blocks)
+
+Level 2: Text Processing & System Automation
+    Script 6: Log Parsing with grep and awk (Extracting specific patterns)
+    Script 7: Disk Space Monitoring (Sending an alert if a partition is full)
+    Script 8: Backup and Compression (Automating folder backups with timestamps)
+    Script 9: User & Permissions Management (Checking file ownership and permissions)
+    Script 10: Process Monitoring (Checking if a specific OS process is running)
+
+Level 3: Middleware-Specific Automation (WebLogic & JBoss Focus)
+    Script 11: Server Status Checker (Looping through WebLogic/JBoss ports to check availability)
+    Script 12: Log Rotator/Purger (Cleaning up .out or .log files older than 'X' days)
+    Script 13: Thread Dump Automator (Taking multiple JVM thread dumps using jstack)
+    Script 14: Datasource/URL Ping Test (Testing DB connectivity from the app server)
+    Script 15: Deployment Automation Simulator (Moving a .war file and restarting a service)
+
+Level 4: Advanced Scripting & Error Handling
+
+    Script 16: Centralized Log Searching (Searching error keywords across multiple managed server logs)
+    Script 17: Configuration File Modifier (Using sed to update a properties file safely)
+    Script 18: Master Health Check Dashboard (Generating an HTML or text summary of system health)

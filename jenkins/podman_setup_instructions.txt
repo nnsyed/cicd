@@ -1,0 +1,10 @@
+podman rm -f jenkins
+podman build --no-cache -t localhost/jenkins-ubuntu -f Dockerfile.jenkins .
+
+podman run -d --name jenkins --restart unless-stopped \
+  -p 8080:8080 -p 50000:50000 \
+  --userns=keep-id:uid=1000,gid=1000 \
+  --security-opt label=disable \
+  -v "$HOME/t_work/jenkins_home:/var/jenkins_home" \
+  -v /run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock \
+  localhost/jenkins-ubuntu

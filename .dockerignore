@@ -1,0 +1,4 @@
+# Send only what the Dockerfile needs to the Docker daemon
+*
+!target/*.jar
+!src/c_code/target/utilities.tar.gz

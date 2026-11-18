@@ -1,0 +1,26 @@
+# Jenkins controller on Ubuntu, with JDK, C toolchain and Docker CLI.
+# The Docker CLI talks to the host's Podman socket (Docker-compatible API).
+# C code compiled here runs on the ubuntu:<same version> app image.
+FROM docker.io/library/ubuntu:24.04
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openjdk-21-jdk-headless fontconfig fonts-dejavu-core libfreetype6 libharfbuzz0b \
+      curl ca-certificates git tini \
+      build-essential docker.io \
+ && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu 24.04 ships a default 'ubuntu' user with UID 1000; Jenkins uses 1000
+RUN userdel -r ubuntu 2>/dev/null || true \
+ && useradd -m -u 1000 -d /var/jenkins_home -s /bin/bash jenkins \
+ && mkdir -p /usr/share/jenkins \
+ && curl -fsSL https://get.jenkins.io/war-stable/latest/jenkins.war -o /usr/share/jenkins/jenkins.war
+
+ENV JENKINS_HOME=/var/jenkins_home
+# Podman's Docker API doesn't support BuildKit; use the classic builder
+ENV DOCKER_BUILDKIT=0
+USER jenkins
+WORKDIR /var/jenkins_home
+
+EXPOSE 8080 50000
+ENTRYPOINT ["/usr/bin/tini", "--", "java", "-Djava.awt.headless=true", "-jar", "/usr/share/jenkins/jenkins.war"]

@@ -1,0 +1,21 @@
+podman --version                          # needs 4.3 or newer
+systemctl --user enable --now podman.socket
+sudo loginctl enable-linger "$USER"       # keeps the socket and Jenkins running after you log out
+
+ls -l /run/user/$(id -u)/podman/podman.sock
+curl -s --unix-socket /run/user/$(id -u)/podman/podman.sock http://d/_ping; echo    # prints OK
+
+podman build -t localhost/jenkins-ubuntu -f Dockerfile.jenkins .
+
+
+#mkdir -p ~/t_work/jenkins_home
+
+podman run -d --name jenkins --restart unless-stopped \
+  -p 8080:8080 -p 50000:50000 \
+  --userns=keep-id:uid=1000,gid=1000 \
+  --security-opt label=disable \
+  -v "$HOME/t_work/jenkins_home:/var/jenkins_home" \
+  -v /run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock \
+  localhost/jenkins-ubuntu
+
+systemctl --user enable podman-restart.service   # restarts Jenkins after a reboot

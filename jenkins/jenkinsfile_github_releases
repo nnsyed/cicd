@@ -1,0 +1,84 @@
+pipeline {
+    agent any
+
+    environment {
+        GITHUB_OWNER = 'nnsyed'
+        GITHUB_REPO  = 'cicd'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git"
+            }
+        }
+
+        stage('Build & Test Java') {
+            steps {
+                sh 'chmod +x mvnw'
+                sh './mvnw -B clean package'   // package already runs the tests
+            }
+        }
+
+        stage('Build C Utilities') {
+            steps {
+                dir('src/c_code') {
+                    sh 'make clean && make'
+                }
+            }
+        }
+
+        stage('Publish Java to GitHub Packages') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github-pat-cred',
+                        usernameVariable: 'GITHUB_USR', passwordVariable: 'GITHUB_PSW')]) {
+                    // Single quotes: Maven resolves ${env.*} at runtime; Groovy never sees the secret
+                    writeFile file: 'settings.xml', text: '''<settings>
+  <servers>
+    <server>
+      <id>github</id>
+      <username>${env.GITHUB_USR}</username>
+      <password>${env.GITHUB_PSW}</password>
+    </server>
+  </servers>
+</settings>'''
+                    sh './mvnw -B deploy -DskipTests -s settings.xml'
+                }
+            }
+            post {
+                always {
+                    sh 'rm -f settings.xml'
+                }
+            }
+        }
+
+        stage('Publish C Archive to GitHub Releases') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github-pat-cred',
+                        usernameVariable: 'GITHUB_USR', passwordVariable: 'GITHUB_PSW')]) {
+                    script {
+                        env.TAG = "v1.0.${BUILD_NUMBER}"
+
+                        def response = sh(returnStdout: true, script: '''
+                            curl -sf -X POST \
+                              -H "Authorization: Bearer $GITHUB_PSW" \
+                              -H "Accept: application/vnd.github+json" \
+                              "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases" \
+                              -d "{\\"tag_name\\":\\"$TAG\\",\\"name\\":\\"Build $BUILD_NUMBER\\",\\"body\\":\\"Automated C utilities build\\"}"
+                        ''').trim()
+
+                        env.UPLOAD_URL = readJSON(text: response).upload_url.replace('{?name,label}', '')
+
+                        sh '''
+                            curl -sf -X POST \
+                              -H "Authorization: Bearer $GITHUB_PSW" \
+                              -H "Content-Type: application/gzip" \
+                              --data-binary @src/c_code/target/utilities.tar.gz \
+                              "$UPLOAD_URL?name=utilities-$TAG.tar.gz"
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
